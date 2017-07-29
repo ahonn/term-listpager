@@ -1,2 +1,3 @@
-## term-list
-Interactive terminal list
+## term-listpager
+scrollable interactive terminal list for Node.js
+

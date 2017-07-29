@@ -12,7 +12,7 @@ const Canvas = require('term-canvas')
 const stdin = process.stdin
 require('keypress')(stdin)
 
-class TermList extends EventEmitter {
+class ListPager extends EventEmitter {
   constructor(opts = {}) {
     super()
     this.items = []
@@ -30,24 +30,29 @@ class TermList extends EventEmitter {
   onkeypress(ch, key) {
     if (!key) return
 
-    this.emit('onkeypress', key, this.selected)
+    this.emit('keypress', key, this.selected)
     switch (key.name) {
       case 'up':
-      case 'k':
         this.up()
         break
       case 'down':
-      case 'j':
         this.down()
         break
       case 'c':
         key.ctrl && this.stop()
         break
-      case 'q':
-        this.stop()
-        break
       default:
     }
+  }
+
+  at(i) {
+    return this.items[i]
+  }
+
+  get(id) {
+    const ids = this.items.map(({ id }) => id)
+    const i = ids.indexOf(id)
+    return this.at(i)
   }
 
   add(id, label) {
@@ -55,6 +60,26 @@ class TermList extends EventEmitter {
       this.select(id)
     }
     this.items.push({ id, label })
+  }
+
+  remove(id) {
+    this.emit('remove', id)
+    const ids = this.items.map(({ id }) => id)
+    if (id === undefined) id = this.selected
+
+    const i = ids.indexOf(id)
+    this.items.splice(i, 1)
+
+    if (!this.items.length) this.emit('empty')
+    const prevItem = this.at(i - 1)
+    prevItem ? this.select(prevItem.id) : this.draw()
+  }
+
+  update(id, newLabel) {
+    const ids = this.items.map(({ id }) => id)
+    const i = ids.indexOf(id)
+    this.items[i].label = newLabel
+    this.draw()
   }
 
   select(id) {
@@ -82,7 +107,7 @@ class TermList extends EventEmitter {
   clear() {
     this.ctx.clear()
     this.ctx.save()
-    this.ctx.translate(4, 5)
+    this.ctx.translate(6, 8)
   }
 
   draw() {
@@ -117,4 +142,4 @@ class TermList extends EventEmitter {
   }
 }
 
-module.exports = TermList
+module.exports = ListPager

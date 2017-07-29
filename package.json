@@ -1,13 +1,17 @@
 {
-  "name": "term-list",
+  "name": "term-listpager",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "example": "node example.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "terminal",
+    "interactive",
+    "scorllable"
+  ],
+  "author": "ahonn <ahonn95@outlook.com>",
   "license": "ISC",
   "dependencies": {
     "keypress": "^0.2.1",
