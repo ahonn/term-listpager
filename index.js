@@ -12,18 +12,25 @@ const Canvas = require('term-canvas')
 const stdin = process.stdin
 require('keypress')(stdin)
 
+const defaults = {
+  x: 4,
+  y: 5,
+  width: 100,
+  height: 200,
+  length: 10,
+  marker: '› ',
+  markerLength: 2,
+}
+
 class ListPager extends EventEmitter {
-  constructor(opts = {}) {
+  constructor(options = {}) {
     super()
     this.items = []
     this.selected = null
 
-    this.marker = opts.marker || '› '
-    this.width = opts.width || 100
-    this.height = opts.height || 200
-    this.length = opts.length || 10
+    this.options = Object.assign({}, defaults, options)
 
-    const canvas = new Canvas(this.width, this.height)
+    const canvas = new Canvas(this.options.width, this.options.height)
     this.ctx = canvas.getContext('2d')
   }
 
@@ -80,11 +87,11 @@ class ListPager extends EventEmitter {
    * @param {object} item - item object { id, label }
    * @returns {undefined}
    */
-  add(item) {
+  add(id, label) {
     if (this.selected === null) {
-      this.select(item.id)
+      this.select(id)
     }
-    this.items.push(item)
+    this.items.push({ id, label })
   }
 
   /**
@@ -177,18 +184,18 @@ class ListPager extends EventEmitter {
    */
   draw() {
     let line = 0
-    const padding = Array(this.marker.length + 1).join(' ')
+    const padding = Array(this.options.markerLength + 1).join(' ')
 
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(this.selected)
-    const start = Math.floor(i / this.length) * this.length
-    const end = (start + 1) * this.length
+    const start = Math.floor(i / this.options.length) * this.options.length
+    const end = (start + 1) * this.options.length
 
     this.ctx.clear()
     this.ctx.save()
-    this.ctx.translate(6, 8)
+    this.ctx.translate(this.options.x, this.options.y)
     this.items.slice(start, end).forEach(({ id, label }) => {
-      const prefix = this.selected === id ? this.marker : padding
+      const prefix = this.selected === id ? this.options.marker : padding
       this.ctx.fillText(prefix + label, 0, line++)
     })
     this.ctx.restore()
