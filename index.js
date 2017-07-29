@@ -27,6 +27,13 @@ class ListPager extends EventEmitter {
     this.ctx = canvas.getContext('2d')
   }
 
+  /**
+   * Handle keypress event
+   *
+   * @param {string} ch - keypress char
+   * @param {objrdct} key - keypress object
+   * @returns {undefined}
+   */
   onkeypress(ch, key) {
     if (!key) return
 
@@ -45,23 +52,47 @@ class ListPager extends EventEmitter {
     }
   }
 
+  /**
+   * Get item at i
+   *
+   * @param {number} i - item index
+   * @returns {object} item at i
+   */
   at(i) {
     return this.items[i]
   }
 
+  /**
+   * Get item at id
+   *
+   * @param {string|number} id - item id
+   * @returns {object} item at id
+   */
   get(id) {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(id)
     return this.at(i)
   }
 
-  add(id, label) {
+  /**
+   * Add item into list
+   *
+   * @param {object} item - item object { id, label }
+   * @returns {undefined}
+   */
+  add(item) {
     if (this.selected === null) {
-      this.select(id)
+      this.select(item.id)
     }
-    this.items.push({ id, label })
+    this.items.push(item)
   }
 
+  /**
+   * Remove item
+   *
+   * @param {string|number} id - item id
+   * @returns {undefined}
+   */
   remove(id) {
     this.emit('remove', id)
     const ids = this.items.map(({ id }) => id)
@@ -75,6 +106,25 @@ class ListPager extends EventEmitter {
     prevItem ? this.select(prevItem.id) : this.draw()
   }
 
+  /**
+   * Reset list and selected
+   *
+   * @returns {undefined}
+   */
+  reset() {
+    this.emit('reset')
+    this.items = []
+    this.selected = null
+    this.draw()
+  }
+
+  /**
+   * Update item label
+   *
+   * @param {string|number} id - update item id
+   * @param {string} newLabel - new item label 
+   * @returns {undefined}
+   */
   update(id, newLabel) {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(id)
@@ -82,12 +132,23 @@ class ListPager extends EventEmitter {
     this.draw()
   }
 
+  /**
+   * Select item
+   *
+   * @param {string|number} id - selected item id
+   * @returns {undefined}
+   */
   select(id) {
     this.emit('select', id)
     this.selected = id
     this.draw()
   }
 
+  /**
+   * Select the previous item
+   *
+   * @returns {undefined}
+   */
   up() {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(this.selected)
@@ -96,6 +157,11 @@ class ListPager extends EventEmitter {
     }
   }
 
+  /**
+   * Select the next item
+   *
+   * @returns {undefined}
+   */
   down() {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(this.selected)
@@ -104,12 +170,11 @@ class ListPager extends EventEmitter {
     }
   }
 
-  clear() {
-    this.ctx.clear()
-    this.ctx.save()
-    this.ctx.translate(6, 8)
-  }
-
+  /**
+   * Draw this list
+   *
+   * @returns {undefined}
+   */
   draw() {
     let line = 0
     const padding = Array(this.marker.length + 1).join(' ')
@@ -119,7 +184,9 @@ class ListPager extends EventEmitter {
     const start = Math.floor(i / this.length) * this.length
     const end = (start + 1) * this.length
 
-    this.clear()
+    this.ctx.clear()
+    this.ctx.save()
+    this.ctx.translate(6, 8)
     this.items.slice(start, end).forEach(({ id, label }) => {
       const prefix = this.selected === id ? this.marker : padding
       this.ctx.fillText(prefix + label, 0, line++)
@@ -127,6 +194,11 @@ class ListPager extends EventEmitter {
     this.ctx.restore()
   }
 
+  /**
+   * Start the list
+   *
+   * @returns {undefined}
+   */
   start() {
     stdin.on('keypress', this.onkeypress.bind(this))
     this.draw()
@@ -135,6 +207,11 @@ class ListPager extends EventEmitter {
     stdin.resume()
   }
 
+  /**
+   * Stop the list
+   *
+   * @returns {undefined}
+   */
   stop() {
     this.ctx.reset()
     process.stdin.pause()
