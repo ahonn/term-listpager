@@ -119,6 +119,18 @@ class ListPager extends EventEmitter {
   }
 
   /**
+   * Set list items
+   *
+   * @returns {undefined}
+   */
+  setItems(items) {
+    if (typeof items !== 'array') {
+      items = [items]
+    }
+    this.items = items
+  }
+
+  /**
    * Add item into list
    *
    * @param {object} item - item object { id, label }
