@@ -26,6 +26,7 @@ class ListPager extends EventEmitter {
   constructor(options = {}) {
     super()
     this.items = []
+    this.header = []
     this.selected = null
 
     this.options = Object.assign({}, defaults, options)
@@ -53,10 +54,46 @@ class ListPager extends EventEmitter {
         this.down()
         break
       case 'c':
-        key.ctrl && this.stop()
+        key.ctrl && this.exit()
         break
       default:
     }
+  }
+
+  /**
+   * Set list header
+   *
+   * @param {string|array} header - header strings
+   * @returns {undefined}
+   */
+  setHeader(header) {
+    if (typeof header !== 'array') {
+      header = [header]
+    }
+    this.header = header
+  }
+
+  /**
+   * Add list header
+   *
+   * @returns {undefined}
+   */
+  addHeader(id, label) {
+    this.header.push({ id, label })
+  }
+
+  /**
+   * Update list header
+   *
+   * @param {string|number} id - update header id
+   * @param {string} newLabel - new header label 
+   * @returns {undefined}
+   */
+  updateHeader(id, newLabel) {
+    const ids = this.header.map(({ id }) => id)
+    const i = ids.indexOf(id)
+    this.header[i].label = newLabel
+    this.draw()
   }
 
   /**
@@ -65,7 +102,7 @@ class ListPager extends EventEmitter {
    * @param {number} i - item index
    * @returns {object} item at i
    */
-  at(i) {
+  itemAt(i) {
     return this.items[i]
   }
 
@@ -75,7 +112,7 @@ class ListPager extends EventEmitter {
    * @param {string|number} id - item id
    * @returns {object} item at id
    */
-  get(id) {
+  getItem(id) {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(id)
     return this.at(i)
@@ -87,9 +124,9 @@ class ListPager extends EventEmitter {
    * @param {object} item - item object { id, label }
    * @returns {undefined}
    */
-  add(id, label) {
+  addItem(id, label) {
     if (this.selected === null) {
-      this.select(id)
+      this.selectItem(id)
     }
     this.items.push({ id, label })
   }
@@ -100,7 +137,7 @@ class ListPager extends EventEmitter {
    * @param {string|number} id - item id
    * @returns {undefined}
    */
-  remove(id) {
+  removeItem(id) {
     this.emit('remove', id)
     const ids = this.items.map(({ id }) => id)
     if (id === undefined) id = this.selected
@@ -110,7 +147,33 @@ class ListPager extends EventEmitter {
 
     if (!this.items.length) this.emit('empty')
     const prevItem = this.at(i - 1)
-    prevItem ? this.select(prevItem.id) : this.draw()
+    prevItem ? this.selectItem(prevItem.id) : this.draw()
+  }
+
+  /**
+   * Update item label
+   *
+   * @param {string|number} id - update item id
+   * @param {string} newLabel - new item label 
+   * @returns {undefined}
+   */
+  updateItem(id, newLabel) {
+    const ids = this.items.map(({ id }) => id)
+    const i = ids.indexOf(id)
+    this.items[i].label = newLabel
+    this.draw()
+  }
+
+  /**
+   * Select item
+   *
+   * @param {string|number} id - selected item id
+   * @returns {undefined}
+   */
+  selectItem(id) {
+    this.emit('select', id)
+    this.selected = id
+    this.draw()
   }
 
   /**
@@ -126,32 +189,6 @@ class ListPager extends EventEmitter {
   }
 
   /**
-   * Update item label
-   *
-   * @param {string|number} id - update item id
-   * @param {string} newLabel - new item label 
-   * @returns {undefined}
-   */
-  update(id, newLabel) {
-    const ids = this.items.map(({ id }) => id)
-    const i = ids.indexOf(id)
-    this.items[i].label = newLabel
-    this.draw()
-  }
-
-  /**
-   * Select item
-   *
-   * @param {string|number} id - selected item id
-   * @returns {undefined}
-   */
-  select(id) {
-    this.emit('select', id)
-    this.selected = id
-    this.draw()
-  }
-
-  /**
    * Select the previous item
    *
    * @returns {undefined}
@@ -160,7 +197,7 @@ class ListPager extends EventEmitter {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(this.selected)
     if (i > 0) {
-      this.select(ids[i - 1])
+      this.selectItem(ids[i - 1])
     }
   }
 
@@ -173,7 +210,7 @@ class ListPager extends EventEmitter {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(this.selected)
     if (i < ids.length - 1) {
-      this.select(ids[i + 1])
+      this.selectItem(ids[i + 1])
     }
   }
 
@@ -194,6 +231,13 @@ class ListPager extends EventEmitter {
     this.ctx.clear()
     this.ctx.save()
     this.ctx.translate(this.options.x, this.options.y)
+
+    // draw header
+    this.header.forEach(({ label }) => {
+      this.ctx.fillText(padding + label, 0, line++)
+    })
+
+    // draw list
     this.items.slice(start, end).forEach(({ id, label }) => {
       const prefix = this.selected === id ? this.options.marker : padding
       this.ctx.fillText(prefix + label, 0, line++)
@@ -215,14 +259,15 @@ class ListPager extends EventEmitter {
   }
 
   /**
-   * Stop the list
+   * Exit the list
    *
    * @returns {undefined}
    */
-  stop() {
+  exit() {
     this.ctx.reset()
     process.stdin.pause()
     stdin.removeListener('keypress', this.onkeypress)
+    this.showCursor()
   }
 }
 

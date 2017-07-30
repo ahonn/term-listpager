@@ -1,15 +1,19 @@
 const ListPager = require('./')
 
 const list = new ListPager()
-list.add('http://google.com', 'Google')
-list.add('http://yahoo.com', 'Yahoo')
-list.add('http://cloudup.com', 'Cloudup')
-list.add('http://github.com', 'Github')
+list.addItem('http://google.com', 'Google')
+list.addItem('http://yahoo.com', 'Yahoo')
+list.addItem('http://cloudup.com', 'Cloudup')
+list.addItem('http://github.com', 'Github')
+
+list.addHeader('playStatus', '')
+list.addHeader('navbar', 'Luoo >')
+list.addHeader('loading', 'loading ...')
 
 list.on('keypress', function (key, selected) {
   switch (key.name) {
     case 'r':
-      list.remove()
+      list.removeItem()
     case 'j':
       list.down()
       break;
@@ -17,7 +21,9 @@ list.on('keypress', function (key, selected) {
       list.up()
       break
     case 'q':
-      list.stop()
+      list.exit()
+    case 'space':
+      list.updateHeader('playStatus', 'Playing ...')
     default:
   }
 })
