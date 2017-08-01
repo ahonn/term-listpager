@@ -8,6 +8,7 @@
 
 const { EventEmitter } = require('events')
 const Canvas = require('term-canvas')
+const isArray = require('isarray')
 
 const stdin = process.stdin
 require('keypress')(stdin)
@@ -67,10 +68,7 @@ class ListPager extends EventEmitter {
    * @returns {undefined}
    */
   setHeader(header) {
-    if (typeof header !== 'array') {
-      header = [header]
-    }
-    this.header = header
+    this.header = isArray(header) ? header : [header]
   }
 
   /**
@@ -115,7 +113,7 @@ class ListPager extends EventEmitter {
   getItem(id) {
     const ids = this.items.map(({ id }) => id)
     const i = ids.indexOf(id)
-    return this.at(i)
+    return this.itemAt(i)
   }
 
   /**
@@ -124,10 +122,8 @@ class ListPager extends EventEmitter {
    * @returns {undefined}
    */
   setItems(items) {
-    if (typeof items !== 'array') {
-      items = [items]
-    }
-    this.items = items
+    this.items = isArray(items) ? items : [items]
+    this.selectItem(this.items[0].id)
   }
 
   /**
@@ -186,6 +182,25 @@ class ListPager extends EventEmitter {
     this.emit('select', id)
     this.selected = id
     this.draw()
+  }
+
+  /**
+   * Get selected item
+   *
+   * @returns {undefined}
+   */
+  getSelected() {
+    const selected = this.selected
+    return this.getItem(selected)
+  }
+
+  /**
+   * Update selected item
+   *
+   * @returns {undefined}
+   */
+  updateSelected(label) {
+    this.updateItem(this.selected, label)
   }
 
   /**
@@ -277,9 +292,9 @@ class ListPager extends EventEmitter {
    */
   exit() {
     this.ctx.reset()
+    this.ctx.showCursor()
     process.stdin.pause()
     stdin.removeListener('keypress', this.onkeypress)
-    this.showCursor()
   }
 }
 

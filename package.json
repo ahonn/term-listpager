@@ -1,6 +1,6 @@
 {
   "name": "term-listpager",
-  "version": "0.4.0",
+  "version": "0.6.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -14,6 +14,7 @@
   "author": "ahonn <ahonn95@outlook.com>",
   "license": "ISC",
   "dependencies": {
+    "isarray": "^2.0.2",
     "keypress": "^0.2.1",
     "term-canvas": "0.0.5"
   }

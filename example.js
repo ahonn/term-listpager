@@ -23,7 +23,8 @@ list.on('keypress', function (key, selected) {
     case 'q':
       list.exit()
     case 'space':
-      list.updateHeader('playStatus', 'Playing ...')
+      this.updateSelected('update')
+      break
     default:
   }
 })
