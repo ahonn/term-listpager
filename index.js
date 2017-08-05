@@ -81,6 +81,17 @@ class ListPager extends EventEmitter {
   }
 
   /**
+   * Get header Item
+   *
+   * @returns {undefined}
+   */
+  getHeader(id) {
+    const ids = this.header.map(({ id }) => id)
+    const i = ids.indexOf(id)
+    return this.header[i]
+  }
+
+  /**
    * Update list header
    *
    * @param {string|number} id - update header id
@@ -88,9 +99,8 @@ class ListPager extends EventEmitter {
    * @returns {undefined}
    */
   updateHeader(id, newLabel) {
-    const ids = this.header.map(({ id }) => id)
-    const i = ids.indexOf(id)
-    this.header[i].label = newLabel
+    const headerItem = this.getHeader(id)
+    headerItem.label = newLabel
     this.draw()
   }
 
